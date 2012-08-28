@@ -1,0 +1,9 @@
+# ignore zip files based on this game
+breakout.zip
+
+# vim swap files
+.*.swp
+.*.swo
+
+# precompiled python files
+*.pyc
