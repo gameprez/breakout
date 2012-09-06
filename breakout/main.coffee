@@ -166,6 +166,7 @@ class Ball
                             @dy = @max_speed
 
                     paddle.score += 100
+                    Gameprez.score("player", paddle.score)
 
     draw: ->
         if (@config.debug)
@@ -221,7 +222,31 @@ class Game
     main: ->
         console.log "starting a new game (in Game.main)"
         @create_canvas()
-        @add_key_observers()
+
+        # replays shouldn't be given access to the keyboard or mouse
+        if (!Gameprez.gameIsReplay)
+            # setup keyboard shortcuts
+            @add_key_observers()
+
+            # define how mouse movement should be handled
+            moveMouse = (event) =>
+                if (!event)
+                    event = window.event
+                    x = event.event.offsetX
+                    y = event.event.offsetY
+                else
+                    x = event.pageX
+                    y = event.pageY
+
+                # basically just move the paddle
+                @paddle.x = x 
+
+            # bind the mouse handler to the document
+            document.onmousemove = moveMouse
+
+        Gameprez.updateMouse = (x, y) =>
+            @paddle.x = x
+
         @start_new_game()
 
     start_new_game: ->
@@ -230,6 +255,10 @@ class Game
         delete @ball
         delete @paddle
         delete @bricks
+
+        Gameprez.start()
+        Gameprez.gameData = {}
+        Gameprez.gameData.pause = false
 
         @spawn_bricks()
         @spawn_ball()
@@ -308,6 +337,8 @@ class Game
             console.log "Game.update() called"
 
         if (@paddle.lives == 0)
+            Gameprez.gameData.pause = true
+
             @context.fillStyle = "rgba(255, 255, 255, 1)"
             @context.font = "bold 72px sans-serif"
             @context.fillText("FAILURE", @canvas.width/2 - 125, @canvas.height/2 + 50)
@@ -332,6 +363,7 @@ class Game
             @paddle.lives -= 1
             @ball.is_dead = false
             if (@paddle.lives > 0)
+                Gameprez.score("computer", (@paddle.config.lives || 3) - @paddle.lives)
                 @spawn_ball()
 
         # draw all the things

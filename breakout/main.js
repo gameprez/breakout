@@ -149,7 +149,8 @@
                 this.dy = this.max_speed;
               }
             }
-            _results.push(paddle.score += 100);
+            paddle.score += 100;
+            _results.push(Gameprez.score("player", paddle.score));
           } else {
             _results.push(void 0);
           }
@@ -225,9 +226,29 @@
     }
 
     Game.prototype.main = function() {
+      var moveMouse,
+        _this = this;
       console.log("starting a new game (in Game.main)");
       this.create_canvas();
-      this.add_key_observers();
+      if (!Gameprez.gameIsReplay) {
+        this.add_key_observers();
+        moveMouse = function(event) {
+          var x, y;
+          if (!event) {
+            event = window.event;
+            x = event.event.offsetX;
+            y = event.event.offsetY;
+          } else {
+            x = event.pageX;
+            y = event.pageY;
+          }
+          return _this.paddle.x = x;
+        };
+        document.onmousemove = moveMouse;
+      }
+      Gameprez.updateMouse = function(x, y) {
+        return _this.paddle.x = x;
+      };
       return this.start_new_game();
     };
 
@@ -237,6 +258,9 @@
       delete this.ball;
       delete this.paddle;
       delete this.bricks;
+      Gameprez.start();
+      Gameprez.gameData = {};
+      Gameprez.gameData.pause = false;
       this.spawn_bricks();
       this.spawn_ball();
       config = {
@@ -315,6 +339,7 @@
         console.log("Game.update() called");
       }
       if (this.paddle.lives === 0) {
+        Gameprez.gameData.pause = true;
         this.context.fillStyle = "rgba(255, 255, 255, 1)";
         this.context.font = "bold 72px sans-serif";
         this.context.fillText("FAILURE", this.canvas.width / 2 - 125, this.canvas.height / 2 + 50);
@@ -334,6 +359,7 @@
         this.paddle.lives -= 1;
         this.ball.is_dead = false;
         if (this.paddle.lives > 0) {
+          Gameprez.score("computer", (this.paddle.config.lives || 3) - this.paddle.lives);
           this.spawn_ball();
         }
       }
