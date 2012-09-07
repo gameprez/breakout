@@ -59,10 +59,12 @@
       this.canvas = this.config.canvas;
       this.radius = this.config.radius || 5;
       this.max_speed = this.config.max_speed || 8;
+      this.max_bounce_angle = this.config.max_bounce_angle || (5 * Math.PI / 12);
       this.x = this.canvas.width / 2;
       this.y = this.canvas.height / 2;
       this.width = 2 * this.radius;
       this.height = 2 * this.radius;
+      this.use_physics = this.config.use_physics || 1;
       this.dx = 0;
       this.dy = this.max_speed;
       this.was_bad = false;
@@ -70,7 +72,7 @@
     }
 
     Ball.prototype.update = function(paddle, bricks) {
-      var b_y, bottom, brick, horizontal, is_bad, left, overlap, overlap2d, right, sx, sy, top, vertical, _i, _len, _ref, _ref1, _results;
+      var b_y, bottom, bounce_angle, brick, horizontal, is_bad, left, normalized_relative_intersection_x, overlap, overlap2d, relative_intersect_x, right, sx, sy, top, vertical, _i, _len, _ref, _ref1, _results;
       if (this.config.debug) {
         console.log("Ball.update() called");
       }
@@ -118,11 +120,19 @@
       };
       overlap = overlap2d(this.x, this.y, this.radius, this.radius, paddle.x - (paddle.width / 2), paddle.y - (paddle.height / 2), paddle.width, paddle.height);
       if (overlap) {
-        this.y = 2 * paddle.y - (this.y + this.radius) - this.height;
-        this.dy = -this.dy;
-        this.dx = ((this.x + (this.radius * 0.5)) - (paddle.x + (paddle.width / 2))) * 4 / paddle.width;
-        if (this.x > paddle.x) {
-          this.dx = -this.dx;
+        if (this.use_physics === 1) {
+          this.y = 2 * paddle.y - (this.y + this.radius) - this.height;
+          this.dy = -this.dy;
+          this.dx = ((this.x + (this.radius * 0.5)) - (paddle.x + (paddle.width / 2))) * 4 / paddle.width;
+          if (this.x > paddle.x) {
+            this.dx = -this.dx;
+          }
+        } else if (this.use_physics === 2) {
+          relative_intersect_x = (paddle.x + (paddle.width / 2)) - this.x;
+          normalized_relative_intersection_x = relative_intersect_x / (paddle.width / 2);
+          bounce_angle = normalized_relative_intersection_x * this.max_bounce_angle;
+          this.dx = Math.cos(bounce_angle) * this.max_speed;
+          this.dy = -1 * Math.sin(bounce_angle) * this.max_speed;
         }
       }
       _results = [];

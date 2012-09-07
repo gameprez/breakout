@@ -51,6 +51,7 @@ class Ball
         @radius = @config.radius || 5
 
         @max_speed = @config.max_speed || 8
+        @max_bounce_angle = @config.max_bounce_angle || (5 * Math.PI/12)
 
         # start in the middle of the canvas
         # this should be the center of the object? depends on how it is drawn..
@@ -59,6 +60,9 @@ class Ball
 
         @width = 2 * @radius
         @height = 2 * @radius
+
+        # choose between either 1 (original physics) or 2 (like wall ball)
+        @use_physics = @config.use_physics || 1
 
         # start off by dropping down
         #bleh = Math.round(Math.random()) ? 1 : - 1
@@ -131,12 +135,19 @@ class Ball
 
         overlap = overlap2d(@x, @y, @radius, @radius, paddle.x - (paddle.width / 2), paddle.y - (paddle.height / 2), paddle.width, paddle.height)
         if (overlap)
-            @y = 2 * paddle.y - (@y + @radius) - @height
-            @dy = -@dy
+            if (@use_physics == 1)
+                @y = 2 * paddle.y - (@y + @radius) - @height
+                @dy = -@dy
 
-            @dx = ((@x + (@radius * 0.5)) - (paddle.x + (paddle.width / 2))) * 4 / paddle.width
-            if (@x > paddle.x)
-                @dx = -@dx
+                @dx = ((@x + (@radius * 0.5)) - (paddle.x + (paddle.width / 2))) * 4 / paddle.width
+                if (@x > paddle.x)
+                    @dx = -@dx
+            else if (@use_physics == 2)
+                relative_intersect_x = (paddle.x + (paddle.width / 2)) - @x
+                normalized_relative_intersection_x = relative_intersect_x / (paddle.width / 2)
+                bounce_angle = normalized_relative_intersection_x * @max_bounce_angle
+                @dx = Math.cos(bounce_angle) * @max_speed
+                @dy = -1 * Math.sin(bounce_angle) * @max_speed
 
         for brick in bricks
             if (!brick.dead)
