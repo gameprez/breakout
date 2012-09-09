@@ -247,11 +247,11 @@ class Game
                     x = event.event.offsetX
                     y = event.event.offsetY
                 else
-                    x = event.pageX
-                    y = event.pageY
+                    x = event.pageX - @canvas.offsetLeft
+                    y = event.pageY - @canvas.offsetTop
 
                 # basically just move the paddle
-                @paddle.x = x 
+                @paddle.x = x
 
             # bind the mouse handler to the document
             document.onmousemove = moveMouse

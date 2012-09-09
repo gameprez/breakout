@@ -253,8 +253,8 @@
             x = event.event.offsetX;
             y = event.event.offsetY;
           } else {
-            x = event.pageX;
-            y = event.pageY;
+            x = event.pageX - _this.canvas.offsetLeft;
+            y = event.pageY - _this.canvas.offsetTop;
           }
           return _this.paddle.x = x;
         };
