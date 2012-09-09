@@ -177,7 +177,8 @@ class Ball
                             @dy = @max_speed
 
                     paddle.score += 100
-                    Gameprez.score("player", paddle.score)
+                    if (@config.use_gameprez)
+                        Gameprez.score("player", paddle.score)
 
     draw: ->
         if (@config.debug)
@@ -235,7 +236,7 @@ class Game
         @create_canvas()
 
         # replays shouldn't be given access to the keyboard or mouse
-        if (!Gameprez.gameIsReplay)
+        if (!@config.use_gameprez || !Gameprez.gameIsReplay)
             # setup keyboard shortcuts
             @add_key_observers()
 
@@ -255,8 +256,9 @@ class Game
             # bind the mouse handler to the document
             document.onmousemove = moveMouse
 
-        Gameprez.updateMouse = (x, y) =>
-            @paddle.x = x
+        if (@config.use_gameprez)
+            Gameprez.updateMouse = (x, y) =>
+                @paddle.x = x
 
         @start_new_game()
 
@@ -267,9 +269,10 @@ class Game
         delete @paddle
         delete @bricks
 
-        Gameprez.start()
-        Gameprez.gameData = {}
-        Gameprez.gameData.pause = false
+        if (@config.use_gameprez)
+            Gameprez.start()
+            Gameprez.gameData = {}
+            Gameprez.gameData.pause = false
 
         @spawn_bricks()
         @spawn_ball()
@@ -278,6 +281,7 @@ class Game
             context: @context
             canvas: @canvas
             debug: @config.debug
+            use_gameprez: @config.use_gameprez
 
         @paddle = new Paddle(config)
 
@@ -317,6 +321,7 @@ class Game
                     color: brick_colors[y]
                     context: @context
                     canvas: @canvas
+                    use_gameprez: @config.use_gameprez
 
                 brick = new Brick(config)
                 @bricks.push(brick)
@@ -328,6 +333,7 @@ class Game
             context: @context
             canvas: @canvas
             debug: @config.debug
+            use_gameprez: @config.use_gameprez
             radius: 5
             max_speed: 8
             dx: 0
@@ -348,7 +354,8 @@ class Game
             console.log "Game.update() called"
 
         if (@paddle.lives == 0)
-            Gameprez.gameData.pause = true
+            if (@config.use_gameprez)
+                Gameprez.gameData.pause = true
 
             @context.fillStyle = "rgba(255, 255, 255, 1)"
             @context.font = "bold 72px sans-serif"
@@ -374,7 +381,8 @@ class Game
             @paddle.lives -= 1
             @ball.is_dead = false
             if (@paddle.lives > 0)
-                Gameprez.score("computer", (@paddle.config.lives || 3) - @paddle.lives)
+                if (@config.use_gameprez)
+                    Gameprez.score("computer", (@paddle.config.lives || 3) - @paddle.lives)
                 @spawn_ball()
 
         # draw all the things
@@ -450,6 +458,7 @@ class Game
 
 config =
     debug: false
+    use_gameprez: false
 
 game = new Game(config)
 game.main()

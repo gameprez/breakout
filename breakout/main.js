@@ -160,7 +160,11 @@
               }
             }
             paddle.score += 100;
-            _results.push(Gameprez.score("player", paddle.score));
+            if (this.config.use_gameprez) {
+              _results.push(Gameprez.score("player", paddle.score));
+            } else {
+              _results.push(void 0);
+            }
           } else {
             _results.push(void 0);
           }
@@ -240,7 +244,7 @@
         _this = this;
       console.log("starting a new game (in Game.main)");
       this.create_canvas();
-      if (!Gameprez.gameIsReplay) {
+      if (!this.config.use_gameprez || !Gameprez.gameIsReplay) {
         this.add_key_observers();
         moveMouse = function(event) {
           var x, y;
@@ -256,9 +260,11 @@
         };
         document.onmousemove = moveMouse;
       }
-      Gameprez.updateMouse = function(x, y) {
-        return _this.paddle.x = x;
-      };
+      if (this.config.use_gameprez) {
+        Gameprez.updateMouse = function(x, y) {
+          return _this.paddle.x = x;
+        };
+      }
       return this.start_new_game();
     };
 
@@ -268,15 +274,18 @@
       delete this.ball;
       delete this.paddle;
       delete this.bricks;
-      Gameprez.start();
-      Gameprez.gameData = {};
-      Gameprez.gameData.pause = false;
+      if (this.config.use_gameprez) {
+        Gameprez.start();
+        Gameprez.gameData = {};
+        Gameprez.gameData.pause = false;
+      }
       this.spawn_bricks();
       this.spawn_ball();
       config = {
         context: this.context,
         canvas: this.canvas,
-        debug: this.config.debug
+        debug: this.config.debug,
+        use_gameprez: this.config.use_gameprez
       };
       this.paddle = new Paddle(config);
       return this.update();
@@ -307,7 +316,8 @@
               height: brick_height,
               color: brick_colors[y],
               context: this.context,
-              canvas: this.canvas
+              canvas: this.canvas,
+              use_gameprez: this.config.use_gameprez
             };
             brick = new Brick(config);
             _results1.push(this.bricks.push(brick));
@@ -325,6 +335,7 @@
         context: this.context,
         canvas: this.canvas,
         debug: this.config.debug,
+        use_gameprez: this.config.use_gameprez,
         radius: 5,
         max_speed: 8,
         dx: 0,
@@ -349,7 +360,9 @@
         console.log("Game.update() called");
       }
       if (this.paddle.lives === 0) {
-        Gameprez.gameData.pause = true;
+        if (this.config.use_gameprez) {
+          Gameprez.gameData.pause = true;
+        }
         this.context.fillStyle = "rgba(255, 255, 255, 1)";
         this.context.font = "bold 72px sans-serif";
         this.context.fillText("FAILURE", this.canvas.width / 2 - 125, this.canvas.height / 2 + 50);
@@ -369,7 +382,9 @@
         this.paddle.lives -= 1;
         this.ball.is_dead = false;
         if (this.paddle.lives > 0) {
-          Gameprez.score("computer", (this.paddle.config.lives || 3) - this.paddle.lives);
+          if (this.config.use_gameprez) {
+            Gameprez.score("computer", (this.paddle.config.lives || 3) - this.paddle.lives);
+          }
           this.spawn_ball();
         }
       }
@@ -462,7 +477,8 @@
   })();
 
   config = {
-    debug: false
+    debug: false,
+    use_gameprez: false
   };
 
   game = new Game(config);
