@@ -456,9 +456,10 @@ class Game
                 when 65 then @aPressed = false
         , false)
 
-config =
-    debug: false
-    use_gameprez: Gameprez?
+$(document).ready ->
+    config =
+        debug: false
+        use_gameprez: Gameprez?
 
-game = new Game(config)
-game.main()
+    game = new Game(config)
+    game.main()
