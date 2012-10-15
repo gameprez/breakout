@@ -458,7 +458,7 @@ class Game
 
 config =
     debug: false
-    use_gameprez: true
+    use_gameprez: Gameprez?
 
 game = new Game(config)
 game.main()

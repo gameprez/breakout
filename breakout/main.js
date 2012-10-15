@@ -478,7 +478,7 @@
 
   config = {
     debug: false,
-    use_gameprez: true
+    use_gameprez: typeof Gameprez !== "undefined" && Gameprez !== null
   };
 
   game = new Game(config);
